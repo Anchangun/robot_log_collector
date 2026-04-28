@@ -103,10 +103,11 @@ rotate 및 정리 기준:
 
 코드 기준 declare 및 사용 parameter:
 
+기본 `config/robot_log_collector.yaml`에 포함된 parameter:
+
 | key | type | default | description |
 | --- | --- | --- | --- |
 | `log_output_dir` | `string` | `~/robot_log_collector/logs` | 로그 저장 디렉터리 |
-| `output_dir` | `string` | `""` | 구 버전 경로 parameter. 값이 있으면 `log_output_dir` 대신 사용하며 deprecated warning 출력 |
 | `file_prefix` | `string` | `rosout` | 로그 파일 prefix |
 | `min_level` | `string` | `INFO` | 최소 저장 로그 레벨. `DEBUG`, `INFO`, `WARN`, `WARNING`, `ERROR`, `FATAL` 처리 |
 | `max_file_size_mb` | `int` | `50` | 로그 파일 최대 크기 MB 단위 |
@@ -118,6 +119,12 @@ rotate 및 정리 기준:
 | `stats_report_period_sec` | `int` | `5` | 통계 출력 주기 초 단위 |
 | `include_logger_regex` | `string` | `.*` | 저장 대상 logger name 정규식 |
 | `exclude_logger_names` | `string[]` | `["robot_log_collector"]` | 저장 제외 logger name 목록 |
+
+호환성 유지용 deprecated parameter:
+
+| key | type | default | description |
+| --- | --- | --- | --- |
+| `output_dir` | `string` | `""` | 구 버전 경로 parameter. 값이 있으면 `log_output_dir` 대신 사용하며 deprecated warning 출력 |
 | `exclude_logger_name` | `string` | `""` | 구 버전 제외 logger parameter. 값이 있으면 `exclude_logger_names`에 추가하며 deprecated warning 출력 |
 
 ## 통계 출력
@@ -235,10 +242,11 @@ Rotation and pruning rules:
 
 Declared and used parameters in code:
 
+Parameters included in the default `config/robot_log_collector.yaml`:
+
 | key | type | default | description |
 | --- | --- | --- | --- |
 | `log_output_dir` | `string` | `~/robot_log_collector/logs` | log output directory |
-| `output_dir` | `string` | `""` | legacy path parameter. If set, used instead of `log_output_dir` and a deprecated warning is printed |
 | `file_prefix` | `string` | `rosout` | log file prefix |
 | `min_level` | `string` | `INFO` | minimum persisted log level. Supports `DEBUG`, `INFO`, `WARN`, `WARNING`, `ERROR`, `FATAL` |
 | `max_file_size_mb` | `int` | `50` | maximum log file size in MB |
@@ -250,6 +258,12 @@ Declared and used parameters in code:
 | `stats_report_period_sec` | `int` | `5` | statistics reporting period in seconds |
 | `include_logger_regex` | `string` | `.*` | logger name regex for inclusion |
 | `exclude_logger_names` | `string[]` | `["robot_log_collector"]` | logger name list for exclusion |
+
+Deprecated parameters kept for compatibility:
+
+| key | type | default | description |
+| --- | --- | --- | --- |
+| `output_dir` | `string` | `""` | legacy path parameter. If set, used instead of `log_output_dir` and a deprecated warning is printed |
 | `exclude_logger_name` | `string` | `""` | legacy excluded logger parameter. If set, appended to `exclude_logger_names` and a deprecated warning is printed |
 
 ## Statistics Output

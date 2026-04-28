@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <utility>
@@ -87,6 +88,11 @@ void FileLogRepository::PruneOldFiles() {
   std::error_code error;
   for (const auto& entry : std::filesystem::directory_iterator(config_.output_dir, error)) {
     if (error) {
+      std::cerr << "[robot_log_collector] failed to iterate log directory for pruning: path="
+                << config_.output_dir
+                << ", error="
+                << error.message()
+                << std::endl;
       return;
     }
 
@@ -116,6 +122,13 @@ void FileLogRepository::PruneOldFiles() {
   for (size_t i = 0; i < remove_count; ++i) {
     std::error_code remove_error;
     std::filesystem::remove(files[i].path(), remove_error);
+    if (remove_error) {
+      std::cerr << "[robot_log_collector] failed to remove old log file: path="
+                << files[i].path()
+                << ", error="
+                << remove_error.message()
+                << std::endl;
+    }
   }
 }
 
