@@ -79,7 +79,6 @@ ros2 run robot_log_collector robot_log_collector \
 - 기존 ROS console prefix 제거
 - `msg->stamp` 기반 `YYYY-MM-DD HH:MM:SS.mmm` 변환
 - `msg->name` 기반 `logger name` 사용
-- `flush_every_n`, `flush_interval_ms` 기준으로 flush 수행
 
 ## 로그 파일 이름
 
@@ -114,7 +113,7 @@ rotate 및 정리 기준:
 | `max_file_size_mb` | `int` | `50` | 로그 파일 최대 크기 MB 단위 |
 | `max_files` | `int` | `20` | 유지할 로그 파일 최대 개수 |
 | `flush_every_n` | `int` | `1` | 지정한 로그 건수마다 flush |
-| `flush_interval_ms` | `int` | `1` | 지정한 시간 간격마다 flush |
+| `flush_interval_ms` | `int` | `1000` | 지정한 시간 간격마다 flush |
 | `queue_capacity` | `int` | `100000` | 내부 큐 최대 길이 |
 | `writer_batch_size` | `int` | `2048` | writer thread가 한 번에 기록하는 최대 배치 크기 |
 | `stats_report_period_sec` | `int` | `5` | 통계 출력 주기 초 단위 |
@@ -127,6 +126,12 @@ rotate 및 정리 기준:
 | --- | --- | --- | --- |
 | `output_dir` | `string` | `""` | 구 버전 경로 parameter. 값이 있으면 `log_output_dir` 대신 사용하며 deprecated warning 출력 |
 | `exclude_logger_name` | `string` | `""` | 구 버전 제외 logger parameter. 값이 있으면 `exclude_logger_names`에 추가하며 deprecated warning 출력 |
+
+flush 동작 기준:
+
+- `flush_every_n` 건 누적 시 flush 수행
+- `flush_interval_ms` 시간이 먼저 경과하면 `flush_every_n`에 도달하지 않아도 flush 수행
+- 기본값 `flush_interval_ms = 1000`은 지나치게 잦은 flush를 줄이면서 주기적 flush를 유지하기 위한 설정
 
 ## 통계 출력
 
@@ -219,7 +224,6 @@ Format processing:
 - existing ROS console prefix removal
 - `msg->stamp`-based `YYYY-MM-DD HH:MM:SS.mmm` conversion
 - `msg->name`-based `logger name` usage
-- flush based on `flush_every_n` and `flush_interval_ms`
 
 ## Log File Name
 
@@ -253,7 +257,7 @@ Parameters included in the default `config/robot_log_collector.yaml`:
 | `min_level` | `string` | `INFO` | minimum persisted log level. Supports `DEBUG`, `INFO`, `WARN`, `WARNING`, `ERROR`, `FATAL` |
 | `max_file_size_mb` | `int` | `50` | maximum log file size in MB |
 | `max_files` | `int` | `20` | maximum number of retained log files |
-| `flush_every_n` | `int` | `100` | flush after the configured number of log records |
+| `flush_every_n` | `int` | `1` | flush after the configured number of log records |
 | `flush_interval_ms` | `int` | `1000` | flush at the configured time interval |
 | `queue_capacity` | `int` | `100000` | maximum internal queue length |
 | `writer_batch_size` | `int` | `2048` | maximum batch size written by the writer thread at once |
@@ -267,6 +271,12 @@ Deprecated parameters kept for compatibility:
 | --- | --- | --- | --- |
 | `output_dir` | `string` | `""` | legacy path parameter. If set, used instead of `log_output_dir` and a deprecated warning is printed |
 | `exclude_logger_name` | `string` | `""` | legacy excluded logger parameter. If set, appended to `exclude_logger_names` and a deprecated warning is printed |
+
+Flush behavior:
+
+- flush after `flush_every_n` accumulated records
+- flush earlier when `flush_interval_ms` elapses, even if `flush_every_n` has not been reached
+- default `flush_interval_ms = 1000` keeps periodic flushing while reducing excessively frequent flush operations
 
 ## Statistics Output
 
