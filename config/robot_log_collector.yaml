@@ -5,8 +5,8 @@ robot_log_collector:
     min_level: "INFO"
     max_file_size_mb: 50
     max_files: 20
-    flush_every_n: 100
-    flush_interval_ms: 1000
+    flush_every_n: 1
+    flush_interval_ms: 1
     queue_capacity: 100000
     writer_batch_size: 2048
     include_logger_regex: ".*"

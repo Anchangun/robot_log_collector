@@ -57,8 +57,8 @@ void RosoutCollectorNode::DeclareParameters() {
   this->declare_parameter<std::string>("min_level", "INFO");
   this->declare_parameter<int>("max_file_size_mb", 50);
   this->declare_parameter<int>("max_files", 20);
-  this->declare_parameter<int>("flush_every_n", 100);
-  this->declare_parameter<int>("flush_interval_ms", 1000);
+  this->declare_parameter<int>("flush_every_n", 1);
+  this->declare_parameter<int>("flush_interval_ms", 1);
   this->declare_parameter<int>("queue_capacity", 100000);
   this->declare_parameter<int>("writer_batch_size", 2048);
   this->declare_parameter<int>("stats_report_period_sec", 5);

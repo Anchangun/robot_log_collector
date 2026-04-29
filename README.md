@@ -79,6 +79,7 @@ ros2 run robot_log_collector robot_log_collector \
 - 기존 ROS console prefix 제거
 - `msg->stamp` 기반 `YYYY-MM-DD HH:MM:SS.mmm` 변환
 - `msg->name` 기반 `logger name` 사용
+- `flush_every_n`, `flush_interval_ms` 기준으로 flush 수행
 
 ## 로그 파일 이름
 
@@ -112,8 +113,8 @@ rotate 및 정리 기준:
 | `min_level` | `string` | `INFO` | 최소 저장 로그 레벨. `DEBUG`, `INFO`, `WARN`, `WARNING`, `ERROR`, `FATAL` 처리 |
 | `max_file_size_mb` | `int` | `50` | 로그 파일 최대 크기 MB 단위 |
 | `max_files` | `int` | `20` | 유지할 로그 파일 최대 개수 |
-| `flush_every_n` | `int` | `100` | 지정한 로그 건수마다 flush |
-| `flush_interval_ms` | `int` | `1000` | 지정한 시간 간격마다 flush |
+| `flush_every_n` | `int` | `1` | 지정한 로그 건수마다 flush |
+| `flush_interval_ms` | `int` | `1` | 지정한 시간 간격마다 flush |
 | `queue_capacity` | `int` | `100000` | 내부 큐 최대 길이 |
 | `writer_batch_size` | `int` | `2048` | writer thread가 한 번에 기록하는 최대 배치 크기 |
 | `stats_report_period_sec` | `int` | `5` | 통계 출력 주기 초 단위 |
@@ -218,6 +219,7 @@ Format processing:
 - existing ROS console prefix removal
 - `msg->stamp`-based `YYYY-MM-DD HH:MM:SS.mmm` conversion
 - `msg->name`-based `logger name` usage
+- flush based on `flush_every_n` and `flush_interval_ms`
 
 ## Log File Name
 
