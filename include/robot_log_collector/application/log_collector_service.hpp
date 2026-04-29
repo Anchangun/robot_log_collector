@@ -21,7 +21,7 @@ namespace robot_log_collector::application {
  */
 struct LogCollectorConfig {
   domain::LogLevel min_level = domain::LogLevel::kInfo;
-  int flush_every_n = 100;
+  int flush_every_n = 1;
   int flush_interval_ms = 1000;
   int queue_capacity = 100000;
   int writer_batch_size = 2048;

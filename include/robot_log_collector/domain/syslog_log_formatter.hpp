@@ -23,7 +23,7 @@ class SyslogLogFormatter {
   explicit SyslogLogFormatter(std::string hostname);
 
   /**
-   * @brief 도메인 로그 레코드를 한 줄 문자열로 변환한다.
+   * @brief 도메인 로그 레코드를 사람이 읽기 쉬운 한 줄 문자열로 변환한다.
    *
    * @param record 변환할 로그 레코드.
    * @param process_id 기존 인터페이스 호환을 위해 유지하는 프로세스 ID.
