@@ -25,6 +25,7 @@ struct LogCollectorConfig {
   int flush_interval_ms = 1000;
   int queue_capacity = 100000;
   int writer_batch_size = 2048;
+  int reorder_window_ms = 500;
   std::string include_logger_regex = ".*";
   std::vector<std::string> exclude_logger_names = {"robot_log_collector"};
 };

@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
@@ -20,6 +21,7 @@ FileLogRepository::FileLogRepository(FileLogRepositoryConfig config)
       formatter_(CurrentHostName()) {
   config_.output_dir = ExpandUserPath(config_.output_dir.string());
   std::filesystem::create_directories(config_.output_dir);
+  InitializeNextFileIndex();
 }
 
 FileLogRepository::~FileLogRepository() {
@@ -50,24 +52,61 @@ void FileLogRepository::Flush() {
 void FileLogRepository::EnsureFileOpen() {
   if (!output_file_.is_open()) {
     OpenNewFile();
+    return;
   }
+
+  if (IsCurrentFileMissing()) {
+    output_file_.close();
+    current_file_size_bytes_ = 0;
+    OpenNewFile();
+  }
+}
+
+bool FileLogRepository::IsCurrentFileMissing() const {
+  if (current_file_path_.empty()) {
+    return false;
+  }
+
+  std::error_code error;
+  const bool exists = std::filesystem::exists(current_file_path_, error);
+  return !error && !exists;
 }
 
 void FileLogRepository::OpenNewFile() {
   std::filesystem::create_directories(config_.output_dir);
 
-  current_file_path_ = config_.output_dir / MakeLogFileName();
-  output_file_.open(current_file_path_, std::ios::out | std::ios::app);
+  if (current_file_path_.empty()) {
+    const std::filesystem::path appendable_file = FindAppendableLogFileForCurrentDate();
+    if (!appendable_file.empty()) {
+      current_file_path_ = appendable_file;
+      output_file_.open(current_file_path_, std::ios::out | std::ios::app);
+
+      if (!output_file_.is_open()) {
+        throw std::runtime_error("Failed to open log file: " + current_file_path_.string());
+      }
+
+      std::error_code size_error;
+      current_file_size_bytes_ = std::filesystem::file_size(current_file_path_, size_error);
+      if (size_error) {
+        current_file_size_bytes_ = 0;
+      }
+
+      PruneOldFiles();
+      return;
+    }
+  }
+
+  do {
+    current_file_path_ = config_.output_dir / MakeLogFileName();
+  } while (std::filesystem::exists(current_file_path_));
+
+  output_file_.open(current_file_path_, std::ios::out | std::ios::trunc);
 
   if (!output_file_.is_open()) {
     throw std::runtime_error("Failed to open log file: " + current_file_path_.string());
   }
 
-  std::error_code error;
-  current_file_size_bytes_ = std::filesystem::file_size(current_file_path_, error);
-  if (error) {
-    current_file_size_bytes_ = 0;
-  }
+  current_file_size_bytes_ = 0;
 
   PruneOldFiles();
 }
@@ -143,6 +182,96 @@ void FileLogRepository::AppendFormattedLine(const std::string& formatted_line) {
 
   output_file_ << formatted_line << '\n';
   current_file_size_bytes_ += line_size_bytes;
+}
+
+void FileLogRepository::InitializeNextFileIndex() {
+  size_t next_index = 0;
+  const std::string prefix = config_.file_prefix + "_";
+  std::error_code error;
+
+  for (const auto& entry : std::filesystem::directory_iterator(config_.output_dir, error)) {
+    if (error) {
+      std::cerr << "[robot_log_collector] failed to iterate log directory for index scan: path="
+                << config_.output_dir
+                << ", error="
+                << error.message()
+                << std::endl;
+      break;
+    }
+
+    if (!entry.is_regular_file() || entry.path().extension() != ".log") {
+      continue;
+    }
+
+    const std::string filename = entry.path().filename().string();
+    if (filename.rfind(prefix, 0) != 0) {
+      continue;
+    }
+
+    const std::string stem = entry.path().stem().string();
+    const size_t separator = stem.find_last_of('_');
+    if (separator == std::string::npos || separator + 1 >= stem.size()) {
+      continue;
+    }
+
+    const std::string index_text = stem.substr(separator + 1);
+    const bool is_index = std::all_of(index_text.begin(), index_text.end(), [](unsigned char ch) {
+      return std::isdigit(ch) != 0;
+    });
+    if (!is_index) {
+      continue;
+    }
+
+    try {
+      next_index = std::max(next_index, static_cast<size_t>(std::stoull(index_text) + 1));
+    } catch (const std::exception&) {
+      continue;
+    }
+  }
+
+  file_index_ = next_index;
+}
+
+std::filesystem::path FileLogRepository::FindAppendableLogFileForCurrentDate() const {
+  const std::string date_prefix = config_.file_prefix + "_" + CurrentTimeForFileName().substr(0, 8) + "_";
+  std::vector<std::filesystem::directory_entry> files;
+  std::error_code error;
+
+  for (const auto& entry : std::filesystem::directory_iterator(config_.output_dir, error)) {
+    if (error) {
+      std::cerr << "[robot_log_collector] failed to iterate log directory for append scan: path="
+                << config_.output_dir
+                << ", error="
+                << error.message()
+                << std::endl;
+      return {};
+    }
+
+    if (!entry.is_regular_file() || entry.path().extension() != ".log") {
+      continue;
+    }
+
+    const std::string filename = entry.path().filename().string();
+    if (filename.rfind(date_prefix, 0) == 0) {
+      files.push_back(entry);
+    }
+  }
+
+  if (files.empty()) {
+    return {};
+  }
+
+  std::sort(files.begin(), files.end(), [](const auto& lhs, const auto& rhs) {
+    return lhs.last_write_time() > rhs.last_write_time();
+  });
+
+  std::error_code size_error;
+  const size_t file_size = std::filesystem::file_size(files.front().path(), size_error);
+  if (size_error || file_size >= config_.max_file_size_bytes) {
+    return {};
+  }
+
+  return files.front().path();
 }
 
 std::string FileLogRepository::MakeLogFileName() {

@@ -61,6 +61,7 @@ void RosoutCollectorNode::DeclareParameters() {
   this->declare_parameter<int>("flush_interval_ms", 1000);
   this->declare_parameter<int>("queue_capacity", 100000);
   this->declare_parameter<int>("writer_batch_size", 2048);
+  this->declare_parameter<int>("reorder_window_ms", 500);
   this->declare_parameter<int>("stats_report_period_sec", 5);
   this->declare_parameter<std::string>("include_logger_regex", ".*");
   this->declare_parameter<std::vector<std::string>>(
@@ -100,6 +101,8 @@ void RosoutCollectorNode::LoadParameters() {
       static_cast<int>(this->get_parameter("queue_capacity").as_int());
   collector_config_.writer_batch_size =
       static_cast<int>(this->get_parameter("writer_batch_size").as_int());
+  collector_config_.reorder_window_ms =
+      static_cast<int>(this->get_parameter("reorder_window_ms").as_int());
   collector_config_.include_logger_regex =
       this->get_parameter("include_logger_regex").as_string();
   collector_config_.exclude_logger_names =

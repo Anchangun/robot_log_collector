@@ -9,6 +9,7 @@ robot_log_collector:
     flush_interval_ms: 1000
     queue_capacity: 100000
     writer_batch_size: 2048
+    reorder_window_ms: 500
     include_logger_regex: ".*"
     exclude_logger_names: ["robot_log_collector"]
     stats_report_period_sec: 5

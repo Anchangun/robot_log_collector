@@ -39,10 +39,13 @@ class FileLogRepository : public application::LogRepository {
 
   // private member functions
   void EnsureFileOpen();
+  bool IsCurrentFileMissing() const;
   void OpenNewFile();
   void RotateFile();
   void PruneOldFiles();
   void AppendFormattedLine(const std::string& formatted_line);
+  void InitializeNextFileIndex();
+  std::filesystem::path FindAppendableLogFileForCurrentDate() const;
   std::string MakeLogFileName();
 
  public:

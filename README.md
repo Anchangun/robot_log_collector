@@ -96,6 +96,7 @@ rosout_20260428_153000_pid12345_000.log
 
 rotate 및 정리 기준:
 
+- 시작 시 같은 날짜의 기존 로그 파일이 있고 용량 제한 전이면 해당 파일에 이어쓰기
 - 현재 파일 크기 + 신규 로그 1줄 > `max_file_size_bytes` 조건 시 rotate
 - `max_files` 초과 시 동일 `file_prefix`와 `.log` 확장자 대상 오래된 파일부터 삭제
 
@@ -116,6 +117,7 @@ rotate 및 정리 기준:
 | `flush_interval_ms` | `int` | `1000` | 지정한 시간 간격마다 flush |
 | `queue_capacity` | `int` | `100000` | 내부 큐 최대 길이 |
 | `writer_batch_size` | `int` | `2048` | writer thread가 한 번에 기록하는 최대 배치 크기 |
+| `reorder_window_ms` | `int` | `500` | timestamp 역전 보정을 위해 writer가 로그를 모아두는 시간 |
 | `stats_report_period_sec` | `int` | `5` | 통계 출력 주기 초 단위 |
 | `include_logger_regex` | `string` | `.*` | 저장 대상 logger name 정규식 |
 | `exclude_logger_names` | `string[]` | `["robot_log_collector"]` | 저장 제외 logger name 목록 |
@@ -132,6 +134,7 @@ flush 동작 기준:
 - `flush_every_n` 건 누적 시 flush 수행
 - `flush_interval_ms` 시간이 먼저 경과하면 `flush_every_n`에 도달하지 않아도 flush 수행
 - 기본값 `flush_interval_ms = 1000`은 지나치게 잦은 flush를 줄이면서 주기적 flush를 유지하기 위한 설정
+- `reorder_window_ms` 동안 timestamp 순서를 보정하며, 입력이 잠잠해지거나 종료할 때 남은 로그를 timestamp 순으로 기록
 
 ## 통계 출력
 
@@ -241,6 +244,7 @@ rosout_20260428_153000_pid12345_000.log
 
 Rotation and pruning rules:
 
+- append to an existing log file from the same date on startup when it is still below the size limit
 - rotate when current file size + one new log line exceeds `max_file_size_bytes`
 - remove oldest files first among files matching the same `file_prefix` and `.log` extension when `max_files` is exceeded
 
@@ -261,6 +265,7 @@ Parameters included in the default `config/robot_log_collector.yaml`:
 | `flush_interval_ms` | `int` | `1000` | flush at the configured time interval |
 | `queue_capacity` | `int` | `100000` | maximum internal queue length |
 | `writer_batch_size` | `int` | `2048` | maximum batch size written by the writer thread at once |
+| `reorder_window_ms` | `int` | `500` | writer-side buffering window for timestamp reorder correction |
 | `stats_report_period_sec` | `int` | `5` | statistics reporting period in seconds |
 | `include_logger_regex` | `string` | `.*` | logger name regex for inclusion |
 | `exclude_logger_names` | `string[]` | `["robot_log_collector"]` | logger name list for exclusion |
@@ -277,6 +282,7 @@ Flush behavior:
 - flush after `flush_every_n` accumulated records
 - flush earlier when `flush_interval_ms` elapses, even if `flush_every_n` has not been reached
 - default `flush_interval_ms = 1000` keeps periodic flushing while reducing excessively frequent flush operations
+- `reorder_window_ms` corrects timestamp order within the buffering window and writes remaining records in timestamp order when input goes idle or the collector shuts down
 
 ## Statistics Output
 
