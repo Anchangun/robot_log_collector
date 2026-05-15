@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>robot_log_collector</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>ROS 2 robot log collector using /rosout</description>
 
   <maintainer email="changun516@gmail.com">changun</maintainer>
@@ -11,6 +11,9 @@
 
   <depend>rclcpp</depend>
   <depend>rcl_interfaces</depend>
+
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>ros2launch</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
